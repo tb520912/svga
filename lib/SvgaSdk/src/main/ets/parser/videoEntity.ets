@@ -1,5 +1,6 @@
 import { MovieData } from './mockWorker';
 import SVGA from '../source/svga'
+import { SpriteEntity } from './spriteEntity';
 
 export class VideoEntity {
 
@@ -62,7 +63,7 @@ export class VideoEntity {
   resetSprites(spec: MovieData) {
     if (spec.sprites instanceof Array) {
       this.sprites = spec.sprites.map((obj) => {
-        return new SVGA.com.opensource.svga.SpriteEntity(obj)
+        return new SpriteEntity(obj)
       })
     }
   }
