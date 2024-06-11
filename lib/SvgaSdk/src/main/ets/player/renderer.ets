@@ -110,6 +110,7 @@ export class Renderer {
           isMatteing = true
           ctx.save()
         }
+        this.drawSprite(sprite, ctx, frame)
         if (isMatteing && index == sprites!.length - 1) {
           let matteSprite = matteSprites.get(sprite.matteKey || '');
           ctx.globalCompositeOperation = "destination-in";
@@ -126,7 +127,7 @@ export class Renderer {
   drawSprite (sprite: SVGA.com.opensource.svga.ISpriteEntity, ctx: CanvasRenderingContext2D, frameIndex: number) {
   if (!sprite.frames || sprite.frames.length === 0) return;
     let frameItem = sprite.frames[this._owner._currentFrame]
-    if (!frameItem.alpha || frameItem.alpha < 0.5) {
+    if (!frameItem.alpha || frameItem.alpha < 0.05) {
       return;
     }
     ctx.save()
@@ -166,7 +167,7 @@ export class Renderer {
     if (typeof src === 'object') {
       if ((frameItem as FrameEntity).maskPath !== undefined && (frameItem as FrameEntity).maskPath !== null) {
         (frameItem as FrameEntity).maskPath!._styles = {}
-        // this.dr
+        this.drawBezier(ctx, (frameItem as FrameEntity).maskPath!)
         ctx.clip()
       }
       if (this._owner._dynamicImageTransform[sprite.imageKey!] !== undefined) {
@@ -179,24 +180,6 @@ export class Renderer {
         ctx.restore()
       }
     }
-    // else if (typeof src === 'string') {
-    //   if ((frameItem as FrameEntity).maskPath !== undefined && (frameItem as FrameEntity).maskPath !== null) {
-    //     (frameItem as FrameEntity).maskPath!._styles = {}
-    //     // this.dr
-    //     ctx.clip()
-    //   }
-    //   if (this._owner._dynamicImageTransform[sprite.imageKey!] !== undefined) {
-    //     ctx.save()
-    //     const concatTransform = this._owner._dynamicImageTransform[sprite.imageKey!]
-    //     ctx.transform(concatTransform.a, concatTransform.b, concatTransform.c, concatTransform.d, concatTransform.tx, concatTransform.ty)
-    //   }
-    //   let newSrc = 'data:image/png;base64,' + src
-    //   const bit = new ImageBitmap(base)
-    //   ctx.drawImage(bit, 0, 0)
-    //   if (this._owner._dynamicImageTransform[sprite.imageKey!] !== undefined) {
-    //     ctx.restore()
-    //   }
-    // }
     frameItem.shapes && frameItem.shapes.forEach(shape => {
       if (shape.type === SVGA.com.opensource.svga.ShapeEntity.ShapeType.SHAPE && shape.shape && shape.shape.d) {
         this.drawBezier(ctx, new BezierPath(shape.shape.d, shape.transform || undefined, shape.styles || undefined))
@@ -209,7 +192,7 @@ export class Renderer {
       }
     })
     let dynamicText = this._owner._dynamicText[sprite.imageKey!]
-    if (dynamicText!== undefined) {
+    if (dynamicText !== undefined) {
       ctx.textBaseline = 'middle'
       ctx.font = dynamicText.style || '16px'
       let textWidth = ctx.measureText(dynamicText.text).width
@@ -218,6 +201,7 @@ export class Renderer {
       let offsetY = (dynamicText.offset !== undefined && dynamicText.offset.y !== undefined) ? isNaN(parseFloat(dynamicText.offset.y.toString())) ? 0 : parseFloat(dynamicText.offset.y.toString()) : 0;
       ctx.fillText(dynamicText.text, ((frameItem.layout?.width || 0) - textWidth) / 2 + offsetX, (frameItem.layout?.height || 0) / 2 + offsetY);
     }
+    ctx.restore()
   }
   resetShapeStyles(ctx: CanvasRenderingContext2D, obj: BezierPath | EllipsePath | RectPath) {
     const styles = obj._styles;

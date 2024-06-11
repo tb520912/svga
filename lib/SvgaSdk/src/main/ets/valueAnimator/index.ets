@@ -1,11 +1,12 @@
 import { util } from '@kit.ArkTS'
 import { systemDateTime } from '@kit.BasicServicesKit'
 import { displaySync } from '@kit.ArkGraphics2D'
+import animator, { AnimatorResult } from '@ohos.animator'
 
 export class ValueAnimator {
-
+  _animator: AnimatorResult | null = null
+  _bindFrame: boolean = false
   static currentTimeMillsecond () {
-
     return systemDateTime.getTime(true)
   }
 
@@ -15,29 +16,37 @@ export class ValueAnimator {
   public loops: number = 1
   public fillRule: number = 0
   public FPS: number = 10
-  public backDisplaySync: displaySync.DisplaySync | null = null
   onStart: () => void = () => {}
   onUpdate: (currentValue: number) => void = (currentValue) => {}
   onEnd: () => void = () => {}
 
   public start(currentValue: number | undefined = undefined) {
-    if (this.backDisplaySync === null) {
-      this.backDisplaySync = displaySync.create()
+    if (this._animator === null) {
+      this._animator = animator.create({
+        duration: 3000,
+        easing: 'ease',
+        delay: 0,
+        fill: 'forwards',
+        direction: 'normal',
+        iterations: -1,
+        begin: this.startValue,
+        end: this.endValue
+      })
       let range: ExpectedFrameRateRange = {
         expected: this.FPS,
         min: 0,
         max: 120
       }
-      this.backDisplaySync.setExpectedFrameRateRange(range)
-      this.backDisplaySync?.start();
+
+      this._animator.play()
     }
 
     this.doStart(false, currentValue)
-    this.backDisplaySync?.on('frame', (frameInfo) => {
-      AlertDialog.show({
-        message: '监听没帧触发'
-      })
-    })
+    // this.backDisplaySync?.on('frame', (frameInfo) => {
+    //   AlertDialog.show({
+    //     message: '监听没帧触发'
+    //   })
+    // })
 
   }
 
@@ -79,9 +88,19 @@ export class ValueAnimator {
     this.mRunning = false
   }
 
-  private doFrame() {
+  private doFrame(): void {
     if (this.mRunning) {
       this.doDeltaTime(ValueAnimator.currentTimeMillsecond() - this.mStartTime)
+      if (this.mRunning) {
+        // setTimeout(() => this.doFrame(), 160)
+        if (!this._bindFrame && this._animator) {
+          this._bindFrame = true
+          this._animator.onframe = (value) => {
+            console.log('animator-frame' + value)
+            this.doFrame()
+          }
+        }
+      }
     }
   }
 
@@ -91,7 +110,8 @@ export class ValueAnimator {
       this.mRunning = false
     }
     else {
-      this.mCurrentFrication = (deltaTime % this.duration) / this.duration
+      // 纳秒 需要转成毫秒后与duration进行比较
+      this.mCurrentFrication = ((deltaTime / 1000000) % this.duration) / this.duration
       if (this.mReverse) {
         this.mCurrentFrication = 1.0 - this.mCurrentFrication
       }

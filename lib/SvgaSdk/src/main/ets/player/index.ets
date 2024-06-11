@@ -53,7 +53,7 @@ export class Player {
     this._videoItem = videoItem
     this._renderer?.prepare()
     this.clear()
-    // this._update()
+    this._update()
   }
   setContentMode(contentMode: string) {
     this._contentMode = contentMode;
@@ -174,9 +174,10 @@ export class Player {
     this._animator.fillRule = this.fillMode === "Backward" ? 1 : 0
 
     this._animator.onUpdate = (value) => {
-      AlertDialog.show({
-        message: '动画中' + value
-      })
+      console.log('===111===:=', Math.floor(value))
+      // AlertDialog.show({
+      //   message: '动画中' + value
+      // })
       if (this._currentFrame === Math.floor(value)) {
         return;
       }
@@ -216,9 +217,33 @@ export class Player {
     this._currentFrame = this._animator.startValue
     this._update()
   }
-
+  _resize() {
+    if (this._context) {
+      let scaleX = 1.0; let scaleY = 1.0; let translateX = 0.0; let translateY = 0.0;
+      let targetSize: VideoSize = { width: this._context !== undefined ? this._context.width : 0.0, height: this._context !== undefined ? this._context.height : 0.0 };
+      let imageSize = this._videoItem?.videoSize || { width: 1, height: 1};
+      if (this._contentMode === "Fill") {
+        scaleX = targetSize.width / imageSize.width;
+        scaleY = targetSize.height / imageSize.height;
+      }
+      else if (this._contentMode === "AspectFit" || this._contentMode === "AspectFill") {
+        const imageRatio = imageSize.width / imageSize.height;
+        const viewRatio = targetSize.width / targetSize.height;
+        if ((imageRatio >= viewRatio && this._contentMode === "AspectFit") || (imageRatio <= viewRatio && this._contentMode === "AspectFill")) {
+          scaleX = scaleY = targetSize.width / imageSize.width;
+          translateY = (targetSize.height - imageSize.height * scaleY) / 2.0
+        }
+        else if ((imageRatio < viewRatio && this._contentMode === "AspectFit") || (imageRatio > viewRatio && this._contentMode === "AspectFill")) {
+          scaleX = scaleY = targetSize.height / imageSize.height;
+          translateX = (targetSize.width - imageSize.width * scaleX) / 2.0
+        }
+      }
+      this._globalTransform = { a: scaleX, b: 0.0, c: 0.0, d: scaleY, tx: translateX, ty: translateY };
+    }
+  }
   _update() {
     if (this._videoItem === undefined) { return; }
+    this._resize()
     this._renderer?.drawFrame(this._currentFrame);
     // this._renderer?.playAudio(this._currentFrame);
   }
