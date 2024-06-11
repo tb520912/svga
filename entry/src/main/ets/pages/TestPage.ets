@@ -12,7 +12,7 @@ struct TestPage {
   build() {
     Column() {
       Canvas(this.context)
-        .width('100%')
+        .width(100)
         .aspectRatio(1)
         .backgroundColor('#000')
         .onReady(() => {

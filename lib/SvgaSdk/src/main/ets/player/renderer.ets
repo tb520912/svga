@@ -153,17 +153,6 @@ export class Renderer {
     let bitMapKey = sprite.imageKey?.replace('.matte', '');
     if (!bitMapKey) return;
     let src: string | image.PixelMap = (this._owner._dynamicImage[bitMapKey]) || (this._bitmapCache ? this._bitmapCache[bitMapKey] : '' ) || (this._owner.getVideoItem()!.images![bitMapKey])
-    // if (typeof src === 'string') {
-    //   let imgTag: ImageBitmap | undefined = undefined
-    //   if (this._bitmapCache && sprite.imageKey) {
-    //     imgTag = this._bitmapCache[sprite.imageKey] || new ImageBitmap(`data:image/png;base64,${src}`)
-    //   } else {
-    //     imgTag = new ImageBitmap(`data:image/png;base64,${src}`)
-    //   }
-    //   let targetWidth = undefined;
-    //   let targetHeight = undefined
-    //
-    // }
     if (typeof src === 'object') {
       if ((frameItem as FrameEntity).maskPath !== undefined && (frameItem as FrameEntity).maskPath !== null) {
         (frameItem as FrameEntity).maskPath!._styles = {}
@@ -480,9 +469,16 @@ export class Renderer {
       // 将沙箱图片转成pixelMap
       // 1, 创建imagesource
       const img = image.createImageSource(buf.buffer)
+      const info = await img.getImageInfo()
+      // let opt : image.ImagePropertyOptions = { index: 0, defaultValue: '9999'}
+      // const imgInfoH = await img.getImageProperty(image.PropertyKey.IMAGE_LENGTH, opt)
+      // const imgInfoW = await img.getImageProperty(image.PropertyKey.IMAGE_WIDTH, opt)
       let pixel: image.PixelMap | null = null
       if (img) {
-        pixel = await img.createPixelMap({ editable: true})
+        pixel = await img.createPixelMap({ editable: false, desiredSize: {
+          width: vp2px(info.size.width),
+          height: vp2px(info.size.height)
+        } })
       }
       return pixel
 
