@@ -38,7 +38,7 @@ export class Player {
   _renderer: Renderer | undefined = undefined;
   _animator: ValueAnimator | null = null;
   _drawingCanvas = undefined;
-  _contentMode = "AspectFit"
+  _contentMode: "AspectFit" | 'Fill' | 'AspectFill' = "AspectFit"
   _forwardAnimating = false;
   _dynamicImage: Record<string, string> = {};
   _dynamicImageTransform: Record<string, SVGA.com.opensource.svga.Transform> = {};
@@ -55,25 +55,22 @@ export class Player {
     this.clear()
     this._update()
   }
-  setContentMode(contentMode: string) {
+  setContentMode(contentMode: "AspectFit" | 'Fill' | 'AspectFill') {
     this._contentMode = contentMode;
     this._update();
   }
   //
   startAnimation(reverse: boolean) {
     this.stopAnimation(false);
-    this._doStart(undefined, reverse, 0);
+    this._doStart(undefined, reverse, undefined);
   }
-
-  // startAnimationWithRange(range, reverse: boolean) {
-  //   this.stopAnimation(false);
-  //   this._doStart(range, reverse, undefined)
-  // }
-
-  // pauseAnimation() {
-  //   this.stopAnimation(false);
-  // }
-  //
+  startAnimationWithRange(range: Range, reverse: boolean = false) {
+    this.stopAnimation(false);
+    this._doStart(range, reverse, undefined);
+  }
+  pauseAnimation() {
+    this.stopAnimation(false);
+  }
   stopAnimation(clear: boolean) {
     this._forwardAnimating = false
     if (this._animator !== undefined) {
@@ -92,26 +89,25 @@ export class Player {
     // this._renderer?.clearAudios();
   }
 
-  // stepToFrame(frame: number, andPlay: boolean) {
-  //   if (frame >= (this._videoItem?.frames || 0) || frame < 0) {
-  //     return;
-  //   }
-  //   this.pauseAnimation();
-  //   this._currentFrame = frame;
-  //   this._update();
-  //   if (andPlay) {
-  //     this._doStart(undefined, false, this._currentFrame)
-  //   }
-  // }
+  stepToFrame(frame: number, andPlay: boolean = true) {
+    if (frame >= (this._videoItem?.frames || 0) || frame < 0) {
+      return;
+    }
+    this.pauseAnimation();
+    this._currentFrame = frame;
+    this._update();
+    if (andPlay) {
+      this._doStart(undefined, false, this._currentFrame);
+    }
+  }
 
-  // stepToPercentage(percentage: number, andPlay: boolean) {
-  //   if (!this._videoItem) return;
-  //   let frame = parseInt((percentage * this._videoItem.frames).toString());
-  //   if (frame >= (this._videoItem?.frames || 0) && frame > 0) {
-  //     frame = this._videoItem.frames - 1;
-  //   }
-  //   this.stepToFrame(frame, andPlay);
-  // }
+  stepToPercentage(percentage: number, andPlay: boolean) {
+    let frame = parseInt((percentage * (this._videoItem?.frames || 1)).toString());
+    if (frame >= (this._videoItem?.frames || 1) && frame > 0) {
+      frame = (this._videoItem?.frames || 1) - 1;
+    }
+    this.stepToFrame(frame, andPlay);
+  }
 
   setImage(urlORbase64: string, forKey: string, transform: SVGA.com.opensource.svga.Transform) {
     this._dynamicImage[forKey] = urlORbase64;
@@ -152,13 +148,7 @@ export class Player {
   //   this._onPercentage = callback;
   // }
 
-  drawOnContext(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number) {
-    if (this._drawingCanvas && this._videoItem) {
-      ctx.drawImage(this._drawingCanvas, x, y, width || this._videoItem.videoSize.width, height || this._videoItem.videoSize.height);
-    }
-  }
-
-  _doStart(range: Range | undefined, reverse: boolean, fromFrame: number) {
+  _doStart(range: Range | undefined, reverse: boolean, fromFrame: number | undefined) {
     this._animator = new ValueAnimator()
     if (range !== undefined) {
       this._animator.startValue = Math.max(0, range.location)
