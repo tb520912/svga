@@ -5,8 +5,10 @@ import { TextMap, TextOffset } from '../model'
 import { AnimationOptions } from '@ohos.arkui.drawableDescriptor'
 import { Animator, AnimatorOptions, AnimatorResult } from '@kit.ArkUI'
 import { ValueAnimator } from '../valueAnimator'
-
+import { util } from '@kit.ArkTS'
+import fs from '@ohos.file.fs'
 export class Player {
+  fileDir: string = ''
   loops: number = 0
   clearsAfterStop = true;
   fillMode = "Forward";
@@ -15,6 +17,9 @@ export class Player {
   private _offCanvas: OffscreenCanvas | null = null
   private _offContext: OffscreenCanvasRenderingContext2D | null = null
   constructor(canvasRenderer: CanvasRenderingContext2D) {
+    this.fileDir = getContext().cacheDir + '/' + util.generateRandomUUID()
+    // 创建目录
+    fs.mkdirSync(this.fileDir)
     this._context = canvasRenderer
     this._offCanvas = new OffscreenCanvas(this._context.width, this._context.height)
     this._offContext = this._offCanvas.getContext('2d', new RenderingContextSettings(true))
@@ -86,7 +91,7 @@ export class Player {
 
   clear() {
     this._renderer?.clear()
-    // this._renderer?.clearAudios();
+    this._renderer?.clearAudios();
   }
 
   stepToFrame(frame: number, andPlay: boolean = true) {
@@ -172,7 +177,7 @@ export class Player {
         return;
       }
       if (this._forwardAnimating && this._currentFrame > Math.floor(value)) {
-        // this._renderer.clearAudios()
+        this._renderer?.clearAudios()
       }
       this._currentFrame = Math.floor(value)
       this._update()
@@ -235,7 +240,7 @@ export class Player {
     if (this._videoItem === undefined) { return; }
     this._resize()
     this._renderer?.drawFrame(this._currentFrame);
-    // this._renderer?.playAudio(this._currentFrame);
+    this._renderer?.playAudio(this._currentFrame);
   }
 
 }

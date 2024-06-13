@@ -3,12 +3,13 @@ import { http } from '@kit.NetworkKit'
 import { BusinessError } from '@kit.BasicServicesKit'
 
 // import { ProtoMovieEntity } from './proto'
-import pako from 'pako'
-import * as common from 'pako/lib/utils/common'
 import * as InflateObj from 'pako/lib/inflate'
 import SVGA from '../source/svga'
-import { util } from '@kit.ArkTS'
+import pako from 'pako'
+import { ArrayList, buffer, taskpool, util } from '@kit.ArkTS'
 import { Message } from 'protobufjs'
+import { IntentionCode } from '@kit.InputKit'
+
 // import { SpriteEntity } from './spriteEntity'
 // import { TransForm } from './frameEntity'
 
@@ -103,17 +104,27 @@ const actions: Action = {
 
   load_viaProto: (arraybuffer, cb, failure) => {
     try {
-      const inflatedData = pako.inflate!(arraybuffer) as Uint8Array
-      const movieData: MovieData = SVGA.com.opensource.svga.MovieEntity.decode(inflatedData) as MovieData
-      let images: Record<string, string> = {}
-      actions._loadImages(images, movieData, () => {
-        movieData.ver = '2.0'
-        cb({
-          movie: movieData,
-          images,
+      taskpool.execute(inflate, arraybuffer).then(inflatedData => {
+        const movieData: MovieData = SVGA.com.opensource.svga.MovieEntity.decode(inflatedData as Uint8Array) as MovieData
+        let images: Record<string, string> = {}
+        actions._loadImages(images, movieData, () => {
+          movieData.ver = '2.0'
+          cb({
+            movie: movieData,
+            images,
+          })
+        })
+      }).catch((err: BusinessError) => {
+        AlertDialog.show({
+          message: '解压错误' + JSON.stringify(err)
         })
       })
+      // const inflatedData = pako.inflate(arraybuffer) as Uint8Array
+
     } catch (err) {
+      AlertDialog.show({
+        message: '解析错误' + JSON.stringify(err)
+      })
       // Do not log to console or throw, if failure() exists
       if (failure) {
         failure(err)
@@ -248,6 +259,11 @@ const actions: Action = {
     }
     reader.readAsArrayBuffer(blob)
   },*/
+}
+
+@Concurrent
+function inflate (buffer: ArrayBuffer): Uint8Array {
+  return pako.inflate(buffer)
 }
 
 export default  (data: string, cb: CbFn, failure: FailureFn) => {

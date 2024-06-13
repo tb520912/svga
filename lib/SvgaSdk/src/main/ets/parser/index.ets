@@ -4,6 +4,9 @@ import { MovieData } from './mockWorker';
 
 export class Parser {
 
+  constructor() {
+
+  }
   /**
    * url: 资源路径
    * success(VideoEntity videoItem)

@@ -1,38 +1,88 @@
 import media from '@ohos.multimedia.media'
+import { util } from '@kit.ArkTS'
+
 // 播放器静态类
 export default class AVPlayerClass {
   player: media.AVPlayer | null = null
-  endFrame: number = 0
-
+  id: string = ''
   constructor() {
-
+    this.id = util.generateRandomUUID()
   }
-  async init(url: string, frame: number): Promise<boolean> {
-    this.endFrame = frame
-    this.player = await media.createAVPlayer()
-    // 缓存后 播放状态不对
-    return this.setUrl(url)
+  async init(url: string): Promise<boolean> {
+    try {
+      AlertDialog.show({
+        message: '11'
+      })
+      this.player = await media.createAVPlayer()
+      AlertDialog.show({
+        message: '22'
+      })
+      // 缓存后 播放状态不对
+      this.player.on('seekDone', () => {
+        this.player?.play()
+      })
+      this.player!.on('stateChange', (state) => {
+        switch (state) {
+          case 'initialized':
+            AlertDialog.show({
+              message: '33'
+            })
+            this.player?.prepare()
+            break;
+            case 'prepared':
+              AlertDialog.show({
+                message: '44'
+              })
+              this.player?.play()
+          break;
+              case 'stopped':
+                AlertDialog.show({
+                  message: '66'
+                })
+                this.player?.prepare()
+        }
+      })
+      this.player.url = url
+      AlertDialog.show({
+        message: '55'
+      })
+      return true
+      // return await this.setUrl(url)
+    } catch (e) {
+      return false
+    }
   }
 
   // 设置文件源
-  setUrl (url: string)  {
-    return new Promise<boolean>((resolve, reject) => {
-      if (!this.player) {
-        reject(false)
-      }
-      this.player!.on('stateChange', (state) => {
-        if (state === 'prepared') {
-          resolve(true)
-        }
-      })
-      this.player!.url = url
-    })
-  }
+  // setUrl (url: string)  {
+  //   return new Promise<boolean>((resolve, reject) => {
+  //     if (!this.player) {
+  //       reject(false)
+  //     }
+  //     this.player!.on('stateChange', (state) => {
+  //       switch (state) {
+  //         case 'initialized':
+  //           this.player?.prepare()
+  //         break;
+  //         case 'prepared':
+  //           resolve(true)
+  //       }
+  //     })
+  //     this.player!.url = url
+  //   })
+  // }
   // 单曲播放
   play() {
     const states: media.AVPlayerState[] = ['prepared', 'paused', 'completed']
     if (this.player?.state && states.includes(this.player?.state)) {
       this.player.play()
+    }
+  }
+  // 设置进度
+  seek (seek: number) {
+    const states: media.AVPlayerState[] = ['prepared', 'paused', 'completed', 'playing']
+    if (this.player && states.includes(this.player.state)) {
+      this.player.seek(seek)
     }
   }
   // 播放 暂停
