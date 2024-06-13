@@ -10,13 +10,7 @@ export default class AVPlayerClass {
   }
   async init(url: string): Promise<boolean> {
     try {
-      AlertDialog.show({
-        message: '11'
-      })
       this.player = await media.createAVPlayer()
-      AlertDialog.show({
-        message: '22'
-      })
       // 缓存后 播放状态不对
       this.player.on('seekDone', () => {
         this.player?.play()
@@ -24,21 +18,12 @@ export default class AVPlayerClass {
       this.player!.on('stateChange', (state) => {
         switch (state) {
           case 'initialized':
-            AlertDialog.show({
-              message: '33'
-            })
             this.player?.prepare()
             break;
             case 'prepared':
-              AlertDialog.show({
-                message: '44'
-              })
               this.player?.play()
           break;
               case 'stopped':
-                AlertDialog.show({
-                  message: '66'
-                })
                 this.player?.prepare()
         }
       })

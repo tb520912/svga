@@ -9,6 +9,7 @@ import pako from 'pako'
 import { ArrayList, buffer, taskpool, util } from '@kit.ArkTS'
 import { Message } from 'protobufjs'
 import { IntentionCode } from '@kit.InputKit'
+import { when } from '@ohos/hypium'
 
 // import { SpriteEntity } from './spriteEntity'
 // import { TransForm } from './frameEntity'
@@ -262,8 +263,8 @@ const actions: Action = {
 }
 
 @Concurrent
-function inflate (buffer: ArrayBuffer): Uint8Array {
-  return pako.inflate(buffer)
+function inflate (buf: ArrayBuffer): Uint8Array {
+  return pako.inflate(buf)
 }
 
 export default  (data: string, cb: CbFn, failure: FailureFn) => {
