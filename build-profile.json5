@@ -46,8 +46,8 @@
       ]
     },
     {
-      "name": "SvgaSdk",
-      "srcPath": "./lib/SvgaSdk",
+      "name": "Svga",
+      "srcPath": "./lib/Svga"
     }
   ]
 }

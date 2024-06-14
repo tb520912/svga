@@ -2,12 +2,11 @@ import { VideoEntity, VideoSize } from '../parser/videoEntity'
 import { Renderer } from './renderer'
 import SVGA from '../source/svga'
 import { TextMap, TextOffset } from '../model'
-import { AnimationOptions } from '@ohos.arkui.drawableDescriptor'
-import { Animator, AnimatorOptions, AnimatorResult } from '@kit.ArkUI'
 import { ValueAnimator } from '../valueAnimator'
 import { util } from '@kit.ArkTS'
 import fs from '@ohos.file.fs'
 export class Player {
+  context: UIContext | null = null
   fileDir: string = ''
   loops: number = 0
   clearsAfterStop = true;
@@ -16,7 +15,8 @@ export class Player {
   private _context: CanvasRenderingContext2D
   private _offCanvas: OffscreenCanvas | null = null
   private _offContext: OffscreenCanvasRenderingContext2D | null = null
-  constructor(canvasRenderer: CanvasRenderingContext2D) {
+  constructor(context: UIContext, canvasRenderer: CanvasRenderingContext2D) {
+    this.context = context
     this.fileDir = getContext().cacheDir + '/' + util.generateRandomUUID()
     // 创建目录
     fs.mkdirSync(this.fileDir)
@@ -24,6 +24,7 @@ export class Player {
     this._offCanvas = new OffscreenCanvas(this._context.width, this._context.height)
     this._offContext = this._offCanvas.getContext('2d', new RenderingContextSettings(true))
     this._init()
+    this.addListener()
   }
   _init () {
     this._renderer = new Renderer(this)
@@ -91,7 +92,7 @@ export class Player {
 
   clear() {
     this._renderer?.clear()
-    this._renderer?.clearAudios();
+    this._renderer?.release();
   }
 
   stepToFrame(frame: number, andPlay: boolean = true) {
@@ -189,9 +190,6 @@ export class Player {
       }
     }
     this._animator.onEnd = () => {
-      AlertDialog.show({
-        message: '动画完成'
-      })
       this._forwardAnimating = false
       if (this.clearsAfterStop === true) {
         this.clear()
@@ -241,6 +239,18 @@ export class Player {
     this._resize()
     this._renderer?.drawFrame(this._currentFrame);
     this._renderer?.playAudio(this._currentFrame);
+  }
+  // 页面切换时清除资源
+  release () {
+  this.context?.getUIObserver().off('navDestinationUpdate', () => this.release())
+    this.context?.getUIObserver().off('routerPageUpdate', () => this.release())
+    fs.rmdirSync(this.fileDir)
+    this.clear()
+  }
+  // 监听页面切换
+  private addListener () {
+  this.context?.getUIObserver().on('navDestinationUpdate', () => this.release())
+    this.context?.getUIObserver().on('routerPageUpdate', () => this.release())
   }
 
 }

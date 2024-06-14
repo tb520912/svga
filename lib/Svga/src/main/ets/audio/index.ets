@@ -28,9 +28,6 @@ export default class AVPlayerClass {
         }
       })
       this.player.url = url
-      AlertDialog.show({
-        message: '55'
-      })
       return true
       // return await this.setUrl(url)
     } catch (e) {

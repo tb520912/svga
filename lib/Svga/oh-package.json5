@@ -1,16 +1,15 @@
 {
-  "name": "svgasdk",
-  "version": "1.0.0",
+  "name": "svga",
+  "version": "0.0.1",
   "description": "Please describe the basic information.",
   "main": "Index.ets",
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
     "pako": "^2.1.0",
-    "protobufjs": "^7.2.4"
-  },
-  "devDependencies": {
+    "protobufjs": "^7.2.4",
     "@types/pako": "^2.0.0"
   },
-  "dynamicDependencies": {}
+  "dynamicDependencies": {},
+  "devDependencies": {}
 }

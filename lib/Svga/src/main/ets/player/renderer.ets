@@ -100,6 +100,11 @@ export class Renderer {
   clear () {
     this._owner.getContext().clearRect(0,0,this._owner.getContext().width, this._owner.getContext().height)
   }
+  release () {
+  this._soundsQueue.forEach(player => {
+    player.player.release()
+  })
+  }
   clearAudios() {
     this._soundsQueue.forEach(it => {
       it.player.stop()
@@ -535,7 +540,7 @@ export class Renderer {
 
     } catch (e) {
       AlertDialog.show({
-        message: '错误' + JSON.stringify(e)
+        message: '转码图片失败' + JSON.stringify(e)
       })
       return null
     }
@@ -556,7 +561,7 @@ export class Renderer {
     }
      catch (err) {
       AlertDialog.show({
-        message: '保存沙箱是吧' + JSON.stringify(err)
+        message: '保存沙箱失败' + JSON.stringify(err)
       })
        return -1
      }

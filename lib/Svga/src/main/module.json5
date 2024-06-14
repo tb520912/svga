@@ -1,6 +1,6 @@
 {
   "module": {
-    "name": "SvgaSdk",
+    "name": "Svga",
     "type": "har",
     "deviceTypes": [
       "default",

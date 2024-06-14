@@ -6,7 +6,7 @@
   "author": "",
   "license": "",
   "dependencies": {
-    "svgasdk": "file:../lib/SvgaSdk"
+    "svga": "file:../lib/Svga"
   }
 }
 
