@@ -33,7 +33,7 @@ export class FrameEntity {
    * Object[]
    */
   shapes: SVGA.com.opensource.svga.IShapeEntity[] = [];
-  lastShapes: SVGA.com.opensource.svga.IShapeEntity[] = []
+  static lastShapes: SVGA.com.opensource.svga.IShapeEntity[] = []
 
   constructor(spec: SVGA.com.opensource.svga.IFrameEntity) {
     this.alpha = parseFloat((spec.alpha || 0).toString())
@@ -126,11 +126,11 @@ export class FrameEntity {
         })
       }
       if (spec.shapes[0] && spec.shapes[0].type === SVGA.com.opensource.svga.ShapeEntity.ShapeType.KEEP) {
-        this.shapes = this.lastShapes;
+        this.shapes = FrameEntity.lastShapes;
       }
       else {
         this.shapes = spec.shapes
-        this.lastShapes = spec.shapes;
+        FrameEntity.lastShapes = spec.shapes;
       }
     }
     let llx = this.transform.a! * this.layout.x! + this.transform.c! * this.layout.y! + this.transform.tx!;
