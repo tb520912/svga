@@ -9,6 +9,9 @@ ohpm install svga
 # 使用 
 参考web使用方式
 ```arkTS
+import SVGA from 'svga'
+
+...
 Canvas(this.context)
         .width(300)
         .aspectRatio(1)
