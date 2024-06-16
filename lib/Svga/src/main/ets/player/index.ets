@@ -5,39 +5,13 @@ import { TextMap, TextOffset } from '../model'
 import { ValueAnimator } from '../valueAnimator'
 import { util } from '@kit.ArkTS'
 import fs from '@ohos.file.fs'
+
 export class Player {
   context: UIContext | null = null
   fileDir: string = ''
   loops: number = 0
   clearsAfterStop = true;
   fillMode = "Forward";
-  private _videoItem: VideoEntity | null = null
-  private _context: CanvasRenderingContext2D
-  private _offCanvas: OffscreenCanvas | null = null
-  private _offContext: OffscreenCanvasRenderingContext2D | null = null
-  constructor(context: UIContext, canvasRenderer: CanvasRenderingContext2D) {
-    this.context = context
-    this.fileDir = getContext().cacheDir + '/' + util.generateRandomUUID()
-    // 创建目录
-    fs.mkdirSync(this.fileDir)
-    this._context = canvasRenderer
-    this._offCanvas = new OffscreenCanvas(this._context.width, this._context.height)
-    this._offContext = this._offCanvas.getContext('2d', new RenderingContextSettings(true))
-    this._init()
-    this.addListener()
-  }
-  _init () {
-    this._renderer = new Renderer(this)
-  }
-  getContext () {
-    return this._context
-  }
-  getVideoItem () {
-    return this._videoItem
-  }
-  getOffContext () {
-    return this._offContext
-  }
   _currentFrame: number = 0
   _asChild = false;
   _container = undefined;
@@ -49,34 +23,77 @@ export class Player {
   _dynamicImage: Record<string, string> = {};
   _dynamicImageTransform: Record<string, SVGA.com.opensource.svga.Transform> = {};
   _dynamicText: Record<string, TextMap> = {};
-  _onFinished: () => void = () => {};
-  _onFrame: (frame: number) => void = (frame) => {};
-  _onPercentage: (frame: number) => void = (frame) => {};
   _globalTransform: SVGA.com.opensource.svga.ITransform | undefined = undefined
+  private _videoItem: VideoEntity | null = null
+  private _context: CanvasRenderingContext2D
+  private _offCanvas: OffscreenCanvas | null = null
+  private _offContext: OffscreenCanvasRenderingContext2D | null = null
 
-  setVideoItem (videoItem: VideoEntity) {
+  constructor(context: UIContext, canvasRenderer: CanvasRenderingContext2D) {
+    this.context = context
+    this.fileDir = getContext().cacheDir + '/' + util.generateRandomUUID()
+    // 创建目录
+    fs.mkdirSync(this.fileDir)
+    this._context = canvasRenderer
+    this._offCanvas = new OffscreenCanvas(this._context.width, this._context.height)
+    this._offContext = this._offCanvas.getContext('2d', new RenderingContextSettings(true))
+    this._init()
+    this.addListener()
+  }
+
+  _init() {
+    this._renderer = new Renderer(this)
+  }
+
+  getContext() {
+    return this._context
+  }
+
+  getVideoItem() {
+    return this._videoItem
+  }
+
+  getOffContext() {
+    return this._offContext
+  }
+
+  _onFinished: () => void = () => {
+  };
+
+  _onFrame: (frame: number) => void = (frame) => {
+  };
+
+  _onPercentage: (frame: number) => void = (frame) => {
+  };
+
+  setVideoItem(videoItem: VideoEntity) {
     this._currentFrame = 0
     this._videoItem = videoItem
     this._renderer?.prepare()
     this.clear()
     this._update()
   }
+
   setContentMode(contentMode: "AspectFit" | 'Fill' | 'AspectFill') {
     this._contentMode = contentMode;
     this._update();
   }
+
   //
   startAnimation(reverse: boolean) {
     this.stopAnimation(false);
     this._doStart(undefined, reverse, undefined);
   }
+
   startAnimationWithRange(range: Range, reverse: boolean = false) {
     this.stopAnimation(false);
     this._doStart(range, reverse, undefined);
   }
+
   pauseAnimation() {
     this.stopAnimation(false);
   }
+
   stopAnimation(clear: boolean) {
     this._forwardAnimating = false
     if (this._animator !== undefined) {
@@ -115,7 +132,7 @@ export class Player {
     this.stepToFrame(frame, andPlay);
   }
 
-  setImage(urlORbase64: string, forKey: string, transform: SVGA.com.opensource.svga.Transform) {
+  setImage(urlORbase64: string, forKey: string, transform?: SVGA.com.opensource.svga.Transform) {
     this._dynamicImage[forKey] = urlORbase64;
     if (transform !== undefined && transform instanceof Array && transform.length == 6) {
       this._dynamicImageTransform[forKey] = transform;
@@ -127,19 +144,14 @@ export class Player {
     let size = (typeof textORMap === "object" ? textORMap.size : "14px") || "14px";
     let family = (typeof textORMap === "object" ? textORMap.family : "Arial") || "Arial";
     let color = (typeof textORMap === "object" ? textORMap.color : "#000000") || "#000000";
-    let offset: TextOffset = (typeof textORMap === "object" ? textORMap.offset : { x: 0.0, y: 0.0 }) || { x: 0.0, y: 0.0 };
+    let offset: TextOffset =
+      (typeof textORMap === "object" ? textORMap.offset : { x: 0.0, y: 0.0 }) || { x: 0.0, y: 0.0 };
     this._dynamicText[forKey] = {
       text,
       style: `${size} ${family}`,
       color,
       offset,
     };
-  }
-
-  clearDynamicObjects() {
-    this._dynamicImage = {};
-    this._dynamicImageTransform = {};
-    this._dynamicText = {};
   }
 
   onFinished(callback: () => void) {
@@ -150,20 +162,34 @@ export class Player {
     this._onFrame = callback;
   }
 
+  // 页面切换时清除资源
+  release() {
+    this.context?.getUIObserver().off('navDestinationUpdate', () => this.release())
+    this.context?.getUIObserver().off('routerPageUpdate', () => this.release())
+    fs.rmdirSync(this.fileDir)
+    this.clear()
+  }
+
   // onPercentage(callback) {
   //   this._onPercentage = callback;
   // }
 
-  _doStart(range: Range | undefined, reverse: boolean, fromFrame: number | undefined) {
+  private clearDynamicObjects() {
+    this._dynamicImage = {};
+    this._dynamicImageTransform = {};
+    this._dynamicText = {};
+  }
+
+  private _doStart(range: Range | undefined, reverse: boolean, fromFrame: number | undefined) {
     this._animator = new ValueAnimator()
     if (range !== undefined) {
       this._animator.startValue = Math.max(0, range.location)
       this._animator.endValue = Math.min((this._videoItem?.frames || 1) - 1, range.location + range.length)
-      this._animator.duration = (this._animator.endValue - this._animator.startValue + 1) * (1.0 / (this._videoItem?.FPS || 1)) * 1000
-    }
-    else {
+      this._animator.duration =
+        (this._animator.endValue - this._animator.startValue + 1) * (1.0 / (this._videoItem?.FPS || 1)) * 1000
+    } else {
       this._animator.startValue = 0
-      this._animator.endValue  = (this._videoItem?.frames || 1) - 1
+      this._animator.endValue = (this._videoItem?.frames || 1) - 1
       this._animator.duration = (this._videoItem?.frames || 1) * (1.0 / (this._videoItem?.FPS || 1)) * 1000
     }
     this._animator.loops = this.loops <= 0 ? Infinity : this.loops
@@ -186,7 +212,8 @@ export class Player {
         this._onFrame(this._currentFrame);
       }
       if (typeof this._onPercentage === "function") {
-        this._onPercentage(parseFloat((this._currentFrame + 1).toString()) / parseFloat((this._videoItem?.frames || 1).toString()));
+        this._onPercentage(parseFloat((this._currentFrame + 1).toString()) /
+        parseFloat((this._videoItem?.frames || 1).toString()));
       }
     }
     this._animator.onEnd = () => {
@@ -202,59 +229,69 @@ export class Player {
     if (reverse === true) {
       this._animator.reverse(fromFrame)
       this._forwardAnimating = false
-    }
-    else {
+    } else {
       this._animator.start(fromFrame)
       this._forwardAnimating = true
     }
     this._currentFrame = this._animator.startValue
     this._update()
   }
-  _resize() {
+
+  private _resize() {
     if (this._context) {
-      let scaleX = 1.0; let scaleY = 1.0; let translateX = 0.0; let translateY = 0.0;
-      let targetSize: VideoSize = { width: this._context !== undefined ? this._context.width : 0.0, height: this._context !== undefined ? this._context.height : 0.0 };
-      let imageSize = this._videoItem?.videoSize || { width: 1, height: 1};
+      let scaleX = 1.0;
+      let scaleY = 1.0;
+      let translateX = 0.0;
+      let translateY = 0.0;
+      let targetSize: VideoSize = {
+        width: this._context !== undefined ? this._context.width : 0.0,
+        height: this._context !== undefined ? this._context.height : 0.0
+      };
+      let imageSize = this._videoItem?.videoSize || { width: 1, height: 1 };
       if (this._contentMode === "Fill") {
         scaleX = targetSize.width / imageSize.width;
         scaleY = targetSize.height / imageSize.height;
-      }
-      else if (this._contentMode === "AspectFit" || this._contentMode === "AspectFill") {
+      } else if (this._contentMode === "AspectFit" || this._contentMode === "AspectFill") {
         const imageRatio = imageSize.width / imageSize.height;
         const viewRatio = targetSize.width / targetSize.height;
-        if ((imageRatio >= viewRatio && this._contentMode === "AspectFit") || (imageRatio <= viewRatio && this._contentMode === "AspectFill")) {
+        if ((imageRatio >= viewRatio && this._contentMode === "AspectFit") ||
+          (imageRatio <= viewRatio && this._contentMode === "AspectFill")) {
           scaleX = scaleY = targetSize.width / imageSize.width;
           translateY = (targetSize.height - imageSize.height * scaleY) / 2.0
-        }
-        else if ((imageRatio < viewRatio && this._contentMode === "AspectFit") || (imageRatio > viewRatio && this._contentMode === "AspectFill")) {
+        } else if ((imageRatio < viewRatio && this._contentMode === "AspectFit") ||
+          (imageRatio > viewRatio && this._contentMode === "AspectFill")) {
           scaleX = scaleY = targetSize.height / imageSize.height;
           translateX = (targetSize.width - imageSize.width * scaleX) / 2.0
         }
       }
-      this._globalTransform = { a: scaleX, b: 0.0, c: 0.0, d: scaleY, tx: translateX, ty: translateY };
+      this._globalTransform = {
+        a: scaleX,
+        b: 0.0,
+        c: 0.0,
+        d: scaleY,
+        tx: translateX,
+        ty: translateY
+      };
     }
   }
-  _update() {
-    if (this._videoItem === undefined) { return; }
+
+  private _update() {
+    if (this._videoItem === undefined) {
+      return;
+    }
     this._resize()
     this._renderer?.drawFrame(this._currentFrame);
     this._renderer?.playAudio(this._currentFrame);
   }
-  // 页面切换时清除资源
-  release () {
-  this.context?.getUIObserver().off('navDestinationUpdate', () => this.release())
-    this.context?.getUIObserver().off('routerPageUpdate', () => this.release())
-    fs.rmdirSync(this.fileDir)
-    this.clear()
-  }
+
   // 监听页面切换
-  private addListener () {
-  this.context?.getUIObserver().on('navDestinationUpdate', () => this.release())
+  private addListener() {
+    this.context?.getUIObserver().on('navDestinationUpdate', () => this.release())
     this.context?.getUIObserver().on('routerPageUpdate', () => this.release())
   }
-
 }
 
 export interface Range {
-  location: number, length: number
+  location: number,
+  length: number
 }

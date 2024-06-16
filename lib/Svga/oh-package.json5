@@ -1,5 +1,5 @@
 {
-  "name": "svga",
+  "name": "@tb-open/svga",
   "version": "0.0.1",
   "description": "Please describe the basic information.",
   "main": "Index.ets",

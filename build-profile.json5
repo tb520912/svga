@@ -5,13 +5,13 @@
         "name": "default",
         "type": "HarmonyOS",
         "material": {
-          "certpath": "C:\\Users\\KT00323-5\\.ohos\\config\\default_svga_OXeaxC7OsRkQcz22Jx5Wo5RfjTLuCRzUgw8dTsol9M8=.cer",
-          "storePassword": "0000001A0FC53D84F836C486EB010E15B22990B2DB020561BCB0CD2CDFAF8668F8E3F0B669B9C278D6FA",
+          "certpath": "/Users/tianbin/.ohos/config/default_SvgaDemo_akwR-9dKxojezTGHyMDAh8mqq0C-tgE79bgHmvz710Q=.cer",
+          "storePassword": "0000001AE906C68DEBE4CC2EACC604882F4EE57248F4AF6A5668511641190D866D13437075A996FB6F60",
           "keyAlias": "debugKey",
-          "keyPassword": "0000001A0C7E3088C7FF60DE937E9C09A5A1BD38F0BDC9AF7BF2824AAE446450AA01D98F0229E30EE252",
-          "profile": "C:\\Users\\KT00323-5\\.ohos\\config\\default_svga_OXeaxC7OsRkQcz22Jx5Wo5RfjTLuCRzUgw8dTsol9M8=.p7b",
+          "keyPassword": "0000001A7C6427F1569EE40E064733C0D0F41F3C9C1033E77BBD34AB09870D820D0C4273AE02392AD30C",
+          "profile": "/Users/tianbin/.ohos/config/default_SvgaDemo_akwR-9dKxojezTGHyMDAh8mqq0C-tgE79bgHmvz710Q=.p7b",
           "signAlg": "SHA256withECDSA",
-          "storeFile": "C:\\Users\\KT00323-5\\.ohos\\config\\default_svga_OXeaxC7OsRkQcz22Jx5Wo5RfjTLuCRzUgw8dTsol9M8=.p12"
+          "storeFile": "/Users/tianbin/.ohos/config/default_SvgaDemo_akwR-9dKxojezTGHyMDAh8mqq0C-tgE79bgHmvz710Q=.p12"
         }
       }
     ],
