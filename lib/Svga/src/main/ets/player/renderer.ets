@@ -549,6 +549,9 @@ export class Renderer {
   saveAudio (src: string, player: AVPlayerClass): number {
   // 保存到沙箱
     try {
+      if (!fs.accessSync(this._owner.fileDir)) {
+        fs.mkdirSync(this._owner.fileDir)
+      }
       const filePath = this._owner.fileDir + '/' + util.generateRandomUUID() + '.mp3'
       const file = fs.openSync(filePath, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE)
       const baseHelper = new util.Base64Helper()

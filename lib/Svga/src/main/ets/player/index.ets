@@ -7,7 +7,8 @@ import { util } from '@kit.ArkTS'
 import fs from '@ohos.file.fs'
 
 export class Player {
-  context: UIContext | null = null
+  uiContext: UIContext | null = null
+  context: Context | null = null
   fileDir: string = ''
   loops: number = 0
   clearsAfterStop = true;
@@ -24,12 +25,15 @@ export class Player {
   _dynamicImageTransform: Record<string, SVGA.com.opensource.svga.Transform> = {};
   _dynamicText: Record<string, TextMap> = {};
   _globalTransform: SVGA.com.opensource.svga.ITransform | undefined = undefined
+  private status = false
   private _videoItem: VideoEntity | null = null
   private _context: CanvasRenderingContext2D
   private _offCanvas: OffscreenCanvas | null = null
   private _offContext: OffscreenCanvasRenderingContext2D | null = null
 
-  constructor(context: UIContext, canvasRenderer: CanvasRenderingContext2D) {
+  constructor(UIContext: UIContext, context: Context, canvasRenderer: CanvasRenderingContext2D) {
+    this.status = true
+    this.uiContext = UIContext
     this.context = context
     this.fileDir = getContext().cacheDir + '/' + util.generateRandomUUID()
     // 创建目录
@@ -59,10 +63,8 @@ export class Player {
 
   _onFinished: () => void = () => {
   };
-
   _onFrame: (frame: number) => void = (frame) => {
   };
-
   _onPercentage: (frame: number) => void = (frame) => {
   };
 
@@ -164,9 +166,15 @@ export class Player {
 
   // 页面切换时清除资源
   release() {
-    this.context?.getUIObserver().off('navDestinationUpdate', () => this.release())
-    this.context?.getUIObserver().off('routerPageUpdate', () => this.release())
-    fs.rmdirSync(this.fileDir)
+    if (!this.status) {
+      return;
+    }
+    this.status = false
+    this.uiContext?.getUIObserver().off('navDestinationUpdate', () => this.release())
+    this.uiContext?.getUIObserver().off('routerPageUpdate', () => this.release())
+    if (fs.accessSync(this.fileDir)) {
+      fs.rmdirSync(this.fileDir)
+    }
     this.clear()
   }
 
@@ -286,8 +294,8 @@ export class Player {
 
   // 监听页面切换
   private addListener() {
-    this.context?.getUIObserver().on('navDestinationUpdate', () => this.release())
-    this.context?.getUIObserver().on('routerPageUpdate', () => this.release())
+    this.uiContext?.getUIObserver().on('navDestinationUpdate', () => this.release())
+    this.uiContext?.getUIObserver().on('routerPageUpdate', () => this.release())
   }
 }
 
