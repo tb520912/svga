@@ -11,11 +11,11 @@ export class Parser {
    * url: 资源路径
    * success(VideoEntity videoItem)
    */
-  load(url: string, success: SuccessFn, failure: FailureFn) {
+  load(url: ResourceStr, success: SuccessFn, failure: FailureFn) {
     this.loadViaWorker(url, success, failure);
   }
 
-  loadViaWorker(url: string, success: SuccessFn, failure: FailureFn) {
+  loadViaWorker(url: ResourceStr, success: SuccessFn, failure: FailureFn) {
     MockWorker(url, (data: MockWorkerResponseData) => {
       let movie = data.movie;
       if (data.movie.ver) {

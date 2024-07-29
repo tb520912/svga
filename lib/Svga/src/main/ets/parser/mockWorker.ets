@@ -1,105 +1,52 @@
 import { FailureFn } from '.'
 import { http } from '@kit.NetworkKit'
 import { BusinessError } from '@kit.BasicServicesKit'
-
-// import { ProtoMovieEntity } from './proto'
-import * as InflateObj from 'pako/lib/inflate'
+import fs from '@ohos.file.fs'
 import SVGA from '../source/svga'
 import pako from 'pako'
-import { ArrayList, buffer, taskpool, util } from '@kit.ArkTS'
-import { Message } from 'protobufjs'
-import { IntentionCode } from '@kit.InputKit'
-import { when } from '@ohos/hypium'
+import { taskpool, util } from '@kit.ArkTS'
 
-// import { SpriteEntity } from './spriteEntity'
-// import { TransForm } from './frameEntity'
-
-// const pako: Pako = {}
-// common.assign(pako, InflateObj.inflate)
-
-// const Uint8ToString = (u8a: Uint8Array) => {
-//   const CHUNK_SZ = 0x8000
-//   // let c: string[] = []
-//   // for (let i = 0; i < u8a.length; i += CHUNK_SZ) {
-//   //   let str: string[] = []
-//   //   u8a.subarray(i, i+CHUNK_SZ).forEach(v => {
-//   //     str.push(String.fromCharCode(v))
-//   //   })
-//   //   c.push(str.join(''))
-//   //   // c.push(String.fromCharCode.apply(null, u8a.subarray(i, i + CHUNK_SZ) as Uint8Array))
-//   // }
-//   // return c.join('')
-//   let body: number[] = []
-//   for (let index = 0; index < u8a.length; index+= CHUNK_SZ) {
-//     body.push()
-//   }
-// }
 
 const actions: Action = {
   loadAssets: (url, cb, failure) => {
-    /*if (typeof JSZipUtils === 'object' && typeof JSZip === 'function') {
-      if (url.toString() == '[object File]') {
-        actions._readBlobAsArrayBuffer(url, function (arrayBufferSVGA) {
-          const dataHeader = new Uint8Array(arrayBufferSVGA, 0, 4)
-          if (
-            dataHeader[0] == 80 &&
-              dataHeader[1] == 75 &&
-              dataHeader[2] == 3 &&
-              dataHeader[3] == 4
-          ) {
-            JSZip.loadAsync(arrayBufferSVGA).then(function (zip) {
-              console.log('zip', zip)
-              actions._decodeAssets(zip, cb)
-            })
-          } else {
-            actions.load_viaProto(arrayBufferSVGA, cb, failure)
-          }
-        })
-      } else if (url.indexOf('data:svga/1.0;base64,') >= 0) {
-        var arrayBufferSVGA = actions._base64ToArrayBuffer(url.substring(21))
-        JSZip.loadAsync(arrayBufferSVGA).then(function (zip) {
-          actions._decodeAssets(zip, cb)
-        })
-      } else if (url.indexOf('data:svga/2.0;base64,') >= 0) {
-        var arrayBufferSVGA = actions._base64ToArrayBuffer(url.substring(21))
-        actions.load_viaProto(arrayBufferSVGA, cb, failure)
+    if (typeof url === 'string' && url.startsWith('http')) {
+      const req = http.createHttp()
+      req.request(url, {
+        expectDataType: http.HttpDataType.ARRAY_BUFFER
+      }).then(res => {
+        if (res) {
+          actions.load_viaProto(res.result as ArrayBuffer, cb, failure)
+        }
+      }).catch((err: BusinessError) => {
+        if (failure) {
+          failure(err)
+          return
+        }
+      })
+    } else if (typeof url === 'string') {
+      if (fs.accessSync(url)) {
+        try {
+          const file = fs.openSync(url, fs.OpenMode.READ_ONLY)
+          let buf: ArrayBuffer = new ArrayBuffer(fs.statSync(file.fd).size);
+          fs.readSync(file.fd, buf)
+          actions.load_viaProto(buf, cb, failure)
+        } catch (e) {
+          console.error("read file error " + e);
+        }
       } else {
-        JSZipUtils.getBinaryContent(url, function (err, data) {
-          if (err) {
-            failure && failure(err)
-            console.error(err)
-            throw err
-          } else {
-            const dataHeader = new Uint8Array(data, 0, 4)
-            if (
-              dataHeader[0] == 80 &&
-                dataHeader[1] == 75 &&
-                dataHeader[2] == 3 &&
-                dataHeader[3] == 4
-            ) {
-              JSZip.loadAsync(data).then(function (zip) {
-                actions._decodeAssets(zip, cb)
-              })
-            } else {
-              actions.load_viaProto(data, cb, failure)
-            }
-          }
+        AlertDialog.show({
+          message: '地址错误 请输入完整沙箱路径'
         })
       }
-    } else {*/
-    const req = http.createHttp()
-    req.request(url, {
-      expectDataType: http.HttpDataType.ARRAY_BUFFER
-    }).then(res => {
-      if (res) {
-        actions.load_viaProto(res.result as ArrayBuffer, cb, failure)
+    } else {
+      try {
+        const buffer = getContext().resourceManager.getMediaContentSync(url.id)
+        actions.load_viaProto(buffer.buffer as ArrayBuffer, cb, failure)
+      } catch (e) {
+
       }
-    }).catch((err: BusinessError) => {
-      if (failure) {
-        failure(err)
-        return
-      }
-    })
+    }
+
     // }
   },
 
@@ -120,13 +67,11 @@ const actions: Action = {
           message: '解压错误' + JSON.stringify(err)
         })
       })
-      // const inflatedData = pako.inflate(arraybuffer) as Uint8Array
 
     } catch (err) {
       AlertDialog.show({
         message: '解析错误' + JSON.stringify(err)
       })
-      // Do not log to console or throw, if failure() exists
       if (failure) {
         failure(err)
         return
@@ -134,30 +79,6 @@ const actions: Action = {
       console.error(err)
     }
   },
-
- /* _decodeAssets: (zip, cb) => {
-    var version = '1.0'
-    if (zip.file('movie.binary')) {
-      version = '1.5'
-    }
-
-    zip
-      .file('movie.spec')
-      .async('string')
-      .then(function (spec) {
-        let movieData = JSON.parse(spec)
-        let images = {}
-
-        movieData.ver = version
-        console.log('movieData222', movieData)
-        actions._loadImages(images, zip, movieData, function () {
-          cb({
-            movie: movieData,
-            images,
-          })
-        })
-      })
-  },*/
 
   _loadImages: (images: Record<string, string>, movieData: MovieData, imagesLoadedBlock: () => void) => {
     if (typeof movieData === 'object') {
@@ -243,23 +164,6 @@ const actions: Action = {
     }*/
   },
 
- /* _base64ToArrayBuffer: (base64) => {
-    var binary_string = window.atob(base64)
-    var len = binary_string.length
-    var bytes = new Uint8Array(len)
-    for (var i = 0; i < len; i++) {
-      bytes[i] = binary_string.charCodeAt(i)
-    }
-    return bytes.buffer
-  },
-
-  _readBlobAsArrayBuffer: (blob, callback) => {
-    var reader = new FileReader()
-    reader.onload = function (e) {
-      callback(e.target.result)
-    }
-    reader.readAsArrayBuffer(blob)
-  },*/
 }
 
 @Concurrent
@@ -267,11 +171,11 @@ function inflate (buf: ArrayBuffer): Uint8Array {
   return pako.inflate(buf)
 }
 
-export default  (data: string, cb: CbFn, failure: FailureFn) => {
+export default  (data: ResourceStr, cb: CbFn, failure: FailureFn) => {
   actions.loadAssets(data, cb, failure)
 }
 export type CbFn = (data: ESObject) => void
-export type ActionLoadAssets = (url: string, cb: CbFn, failure: FailureFn) => void
+export type ActionLoadAssets = (url: ResourceStr, cb: CbFn, failure: FailureFn) => void
 export type ActionLoadViaProto = (arrayBuffer: ArrayBuffer, cb: CbFn, failure: FailureFn) => void
 export interface Action {
   loadAssets: ActionLoadAssets,

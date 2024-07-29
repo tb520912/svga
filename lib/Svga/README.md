@@ -20,7 +20,7 @@ Canvas(this.context)
           const parser = new SVGA.Parser()
           this.player = new SVGA.Player(this.getUIContext() ,this.context)
           parser.load(
-            '远程url路径',
+            '远程url路径/或者resource',
             (videoItem) => {
               this.player?.setVideoItem(videoItem)
               this.player?.startAnimation(false)

@@ -23,7 +23,7 @@ struct TestPage {
           const parser = new SVGA.Parser()
           this.player = new SVGA.Player(this.getUIContext() ,this.context)
           parser.load(
-            'https://medtion-image.medtion.com/uploads/1/image/public/202406/20240613103836_6whqfw7d4l.svga',
+            $r('app.media.hasaudio'),
             (videoItem) => {
               this.player?.setVideoItem(videoItem)
               this.player?.startAnimation(false)

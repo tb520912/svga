@@ -5,13 +5,13 @@
         "name": "default",
         "type": "HarmonyOS",
         "material": {
-          "certpath": "C:\\Users\\KT00323-5\\.ohos\\config\\default_svga_OXeaxC7OsRkQcz22Jx5Wo5RfjTLuCRzUgw8dTsol9M8=.cer",
-          "storePassword": "0000001A0FC53D84F836C486EB010E15B22990B2DB020561BCB0CD2CDFAF8668F8E3F0B669B9C278D6FA",
+          "certpath": "C:\\Users\\KT00323-5\\.ohos\\config\\default_svgaSDK_NEN6KDRxOh5tScVRFEhqykXeryAW72koDi2ggRKlTHQ=.cer",
+          "storePassword": "0000001B946D118FF60940161D8F5DE9E36195EFCDC7A79682C8F70432A3E7C08AE17C838E3A577EE013CE",
           "keyAlias": "debugKey",
-          "keyPassword": "0000001A0C7E3088C7FF60DE937E9C09A5A1BD38F0BDC9AF7BF2824AAE446450AA01D98F0229E30EE252",
-          "profile": "C:\\Users\\KT00323-5\\.ohos\\config\\default_svga_OXeaxC7OsRkQcz22Jx5Wo5RfjTLuCRzUgw8dTsol9M8=.p7b",
+          "keyPassword": "0000001B9E4F47A715E680AAD2BE820739EE75AF70F5A5099221015DE016F32042CAC959AA33EAEA14C1FC",
+          "profile": "C:\\Users\\KT00323-5\\.ohos\\config\\default_svgaSDK_NEN6KDRxOh5tScVRFEhqykXeryAW72koDi2ggRKlTHQ=.p7b",
           "signAlg": "SHA256withECDSA",
-          "storeFile": "C:\\Users\\KT00323-5\\.ohos\\config\\default_svga_OXeaxC7OsRkQcz22Jx5Wo5RfjTLuCRzUgw8dTsol9M8=.p12"
+          "storeFile": "C:\\Users\\KT00323-5\\.ohos\\config\\default_svgaSDK_NEN6KDRxOh5tScVRFEhqykXeryAW72koDi2ggRKlTHQ=.p12"
         }
       }
     ],
