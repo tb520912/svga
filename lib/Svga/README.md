@@ -4,12 +4,14 @@ SVGA SVGA动画播放器 harmonyOSNext版本
 
 # 下载安装
 
-ohpm install svga
+ohpm install @tb-open/svga
 
-# 使用 
+# 使用
+
 参考web使用方式
+
 ```arkTS
-import SVGA from 'svga'
+import SVGA from '@tb-open/svga'
 
 ...
 Canvas(this.context)
@@ -33,3 +35,5 @@ Canvas(this.context)
           )
         })
 ```
+
+#### 如果动画包含音频 则需要在页面切换时调用player.release()方法 销毁播放器 释放音频播放器资源

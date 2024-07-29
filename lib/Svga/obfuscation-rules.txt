@@ -21,3 +21,4 @@
 -enable-toplevel-obfuscation
 -compact
 -remove-log
+-remove-comments

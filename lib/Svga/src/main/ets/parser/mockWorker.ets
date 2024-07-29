@@ -168,7 +168,10 @@ const actions: Action = {
 
 @Concurrent
 function inflate (buf: ArrayBuffer): Uint8Array {
-  return pako.inflate(buf)
+  const options: pako.InflateOptions = {
+    chunkSize: 1024 * 512
+  }
+  return pako.inflate(buf, options)
 }
 
 export default  (data: ResourceStr, cb: CbFn, failure: FailureFn) => {
